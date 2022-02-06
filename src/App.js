@@ -1,46 +1,61 @@
-
 import './App.css';
-import { useState } from 'react';
-import ToDOList from './ToDoList';
+import Header from './Componenet/Header';
+import ToDos from './Componenet/ToDos';
+import Footer from './Componenet/Footer';
+import React, { useEffect, useState } from 'react';
+import AddTodo from './Componenet/AddTodo';
+import { cleanup } from '@testing-library/react';
+
 
 function App() {
-  const [inputList, setInputList] = useState("");
-  const [Items, setItems] = useState([]);
+  let initTodo;
+  
+  if (localStorage.getItem("todos")===null){
+    initTodo = [];
+  }
+  else{
+    initTodo = JSON.parse(localStorage.getItem("todos"));
+  }
+  const onDelete = (todo)=>{
+    console.log("I am onDelete", todo);
+    
+    setToDos(todos.filter((e)=>{
+      return e!==todo;
+    }));
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }
 
-  const itemEvent = (event) => {
-    setInputList(event.target.value);
-  };
+  const addTodo = (title, desc)=>{
+    console.log("I am adding this todo", title, desc )
+    let sno;
+    if(todos.length==0){
+      sno = 0;
+    }
+    else{
+      sno = todos[todos.length-1].sno + 1;
+    }
+    const myTodo = {
+      sno: sno,
+      title: title,
+      desc: desc
+    }
+    setToDos([...todos,myTodo]);
+    console.log(myTodo);
+  }
 
-  const ListOfItems = () => {
-    setItems((oldItems) => {
-      return [...oldItems, inputList];
-    });
-    setInputList("");
-  };
+  const [todos, setToDos] = useState(initTodo);
+  useEffect(()=>{
+    localStorage.setItem("todos", JSON.stringify(todos));
+    
+  }, [todos])
   return (
     <>
-      <div className="main-div">
-        <div className="center-div">
-          <br />
-          <h1>ToDo List</h1>
-          <br />
-          <input type="text" placeholder="Add a Item"
-            value={inputList}
-            onChange={itemEvent} />
-          <button onClick={ListOfItems}> + </button>
-
-          <ol>
-            {/* <li> {inputList} </li> */}
-
-            {Items.map((itemval) => {
-              return <ToDOList text={itemval} />
-            })}
-          </ol>
-
-        </div>
-      </div>
+      <Header title="My Todos Project" searchBar={true} />
+      <AddTodo addTodo={addTodo}/>
+      <ToDos todos={todos} onDelete={onDelete}/>
+      <Footer />
     </>
-  );
+  )
 }
 
 export default App;
